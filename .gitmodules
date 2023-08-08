@@ -1,3 +1,6 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg.git
+[submodule "toolchain/WindowsToolchain"]
+	path = toolchain/WindowsToolchain
+	url = https://github.com/MarkSchofield/WindowsToolchain
