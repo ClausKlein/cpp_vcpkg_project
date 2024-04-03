@@ -1,5 +1,5 @@
 # CMakeLists.txt
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.21...3.29)
 project(cpp_template)
 
 # Find dependencies provided by vcpkg (via vcpkg.cmake)
