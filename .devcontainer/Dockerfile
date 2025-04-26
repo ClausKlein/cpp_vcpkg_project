@@ -1,4 +1,7 @@
-# [Choice] bionic (18.04), focal (20.04)
+# [Choice] bionic (18.04), focal (20.04), jammy (22.04), noble (24.04)
+#
+# see  https://releases.ubuntu.com
+#
 ARG VARIANT="noble"
 FROM ubuntu:${VARIANT}
 
@@ -13,24 +16,26 @@ RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
         make ninja-build git \
         python3 python3-pip
 
-# Install conan
-RUN python3 -m pip install --upgrade pip setuptools && \
-    python3 -m pip install conan && \
-    conan --version
+# FIXME: Install conan, cmake, ninja
+# RUN python3 -m pip install --break-system-packages --upgrade pip setuptools && \
+#     python3 -m pip install --break-system-packages conan cmake ninja && \
+#     conan --version && \
+#     cmake --version && \
+#     ninja --version
 
 # By default, anything you run in Docker is done as superuser.
 # Conan runs some install commands as superuser, and will prepend `sudo` to
 # these commands, unless `CONAN_SYSREQUIRES_SUDO=0` is in your env variables.
-ENV CONAN_SYSREQUIRES_SUDO 0
+ENV CONAN_SYSREQUIRES_SUDO=0
 # Some packages request that Conan use the system package manager to install
 # a few dependencies. This flag allows Conan to proceed with these installations;
 # leaving this flag undefined can cause some installation failures.
-ENV CONAN_SYSREQUIRES_MODE enabled
+ENV CONAN_SYSREQUIRES_MODE=enabled
 
 # User-settable versions:
-# This Dockerfile should support gcc-[7, 8, 9, 10, 11] and clang-[10, 11, 12, 13]
+# This Dockerfile should support gcc-[7, 8, 9, 10, 11, 12, 13] and clang-[10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 # Earlier versions of clang will require significant modifications to the IWYU section
-ARG GCC_VER="11"
+ARG GCC_VER="13"
 # Add gcc-${GCC_VER}
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
@@ -41,7 +46,7 @@ RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
 RUN update-alternatives --install /usr/bin/gcc gcc $(which gcc-${GCC_VER}) 100
 RUN update-alternatives --install /usr/bin/g++ g++ $(which g++-${GCC_VER}) 100
 
-ARG LLVM_VER="13"
+ARG LLVM_VER="20"
 # Add clang-${LLVM_VER}
 ARG LLVM_URL="http://apt.llvm.org/${VARIANT}/"
 ARG LLVM_PKG="llvm-toolchain-${VARIANT}-${LLVM_VER}"
@@ -54,6 +59,8 @@ RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - 2>/dev/
 
 # Set the default clang-tidy, so CMake can find it
 RUN update-alternatives --install /usr/bin/clang-tidy clang-tidy $(which clang-tidy-${LLVM_VER}) 1
+RUN update-alternatives --install /usr/bin/run-clang-tidy run-clang-tidy $(which run-clang-tidy-${LLVM_VER}) 1
+# TODO: RUN update-alternatives --install /usr/bin/clang-format clang-format $(which clang-format-${LLVM_VER}) 1
 
 # Set clang-${LLVM_VER} as default clang
 RUN update-alternatives --install /usr/bin/clang clang $(which clang-${LLVM_VER}) 100
@@ -71,34 +78,36 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 # Install editors
 RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
-        neovim emacs nano
+        neovim nano less #XXX emacs
 
 # Install optional dependencies
 RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
-        doxygen graphviz ccache cppcheck gcovr
+        doxygen graphviz ccache cppcheck gcovr symlinks \
+        libsnmp-dev snmp snmp-mibs-downloader \
+        libboost-serialization-dev libboost-thread-dev libboost-filesystem-dev
 
 # Install include-what-you-use
-ENV IWYU /home/iwyu
-ENV IWYU_BUILD ${IWYU}/build
-ENV IWYU_SRC ${IWYU}/include-what-you-use
-RUN mkdir -p ${IWYU_BUILD} && \
-    git clone --branch clang_${LLVM_VER} \
-        https://github.com/include-what-you-use/include-what-you-use.git \
-        ${IWYU_SRC}
-RUN CC=clang-${LLVM_VER} CXX=clang++-${LLVM_VER} cmake -S ${IWYU_SRC} \
-        -B ${IWYU_BUILD} \
-        -G "Unix Makefiles" -DCMAKE_PREFIX_PATH=/usr/lib/llvm-${LLVM_VER} && \
-    cmake --build ${IWYU_BUILD} -j && \
-    cmake --install ${IWYU_BUILD}
+# ENV IWYU=/home/iwyu
+# ENV IWYU_BUILD=${IWYU}/build
+# ENV IWYU_SRC=${IWYU}/include-what-you-use
+# RUN mkdir -p ${IWYU_BUILD} && \
+#     git clone --branch clang_${LLVM_VER} \
+#         https://github.com/include-what-you-use/include-what-you-use.git \
+#         ${IWYU_SRC}
+# RUN CC=clang-${LLVM_VER} CXX=clang++-${LLVM_VER} cmake -S ${IWYU_SRC} \
+#         -B ${IWYU_BUILD} \
+#         -G "Unix Makefiles" -DCMAKE_PREFIX_PATH=/usr/lib/llvm-${LLVM_VER} && \
+#     cmake --build ${IWYU_BUILD} -j && \
+#     cmake --install ${IWYU_BUILD}
 
 # Per https://github.com/include-what-you-use/include-what-you-use#how-to-install:
 # `You need to copy the Clang include directory to the expected location before
 #  running (similarly, use include-what-you-use -print-resource-dir to learn
 #  exactly where IWYU wants the headers).`
-RUN mkdir -p $(include-what-you-use -print-resource-dir 2>/dev/null)
-RUN ln -s $(readlink -f /usr/lib/clang/${LLVM_VER}/include) \
-    $(include-what-you-use -print-resource-dir 2>/dev/null)/include
+# RUN mkdir -p $(include-what-you-use -print-resource-dir 2>/dev/null)
+# RUN ln -s $(readlink -f /usr/lib/clang/${LLVM_VER}/include) \
+#     $(include-what-you-use -print-resource-dir 2>/dev/null)/include
 
 ## Cleanup cached apt data we don't need anymore
 RUN apt-get autoremove -y && apt-get clean && \
@@ -109,9 +118,11 @@ ARG USE_CLANG
 # if --build-arg USE_CLANG=1, set CC to 'clang' or set to null otherwise.
 ENV CC=${USE_CLANG:+"clang"}
 ENV CXX=${USE_CLANG:+"clang++"}
+ENV GCOV=${USE_CLANG:+"llvm-cov gcov"}
 # if CC is null, set it to 'gcc' (or leave as is otherwise).
 ENV CC=${CC:-"gcc"}
 ENV CXX=${CXX:-"g++"}
+ENV GCOV=${GCOV:-"gcov"}
 
 # Include project
 #ADD . /workspaces/cpp_starter_project
