@@ -56,6 +56,7 @@ if(FEATURE_TESTS)
          CMAKE_C_COMPILER_ID
          STREQUAL
          "GNU")
+
   endif()
 
   if($ENV{CI})

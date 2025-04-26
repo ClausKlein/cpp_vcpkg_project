@@ -47,6 +47,7 @@ ifeq ($(OS), Windows_NT)
 	pwsh -c '$$files=(git ls-files --exclude-standard); foreach ($$file in $$files) { if ((get-item $$file).Extension -in ".json", ".cpp", ".hpp", ".c", ".cc", ".cxx", ".hxx", ".ixx") { clang-format -i -style=file $$file } }'
 else
 	git ls-files --exclude-standard | grep -E '\.(json|cpp|hpp|c|cc|cxx|hxx|ixx)$$' | xargs clang-format -i -style=file
+	git ls-files --exclude-standard ::*.cmake ::*CMakeLists.txt | xargs cmake-format -i
 endif
 
 clean:
