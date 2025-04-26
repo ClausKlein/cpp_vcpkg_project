@@ -45,16 +45,16 @@ jobs:
         include:
           # Inject GCOV variable for gcc
           - compiler: gcc
-            GCOV: gcov
+            GCOV: gcov-13
           # Inject GCOV variable for llvm
           - compiler: llvm
             GCOV: "llvm-cov gcov"
 
           # Only to test non-multiconfig builds
           - os: ubuntu-22.04
-            compiler: gcc-11
-            CMAKE_GENERATOR: "Unix Makefiles"
-            GCOV: gcov-11
+            compiler: gcc
+            CMAKE_GENERATOR: "Ninja"
+            GCOV: gcov-13
 
           - os: windows-2022
             compiler: msvc
@@ -99,9 +99,7 @@ jobs:
           ccache: true
           clangtidy: true
           task: true
-
           cppcheck: true
-
           gcovr: 7.2
           opencppcoverage: true
 
