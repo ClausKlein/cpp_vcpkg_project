@@ -62,6 +62,7 @@ jobs:
 
           - os: macos-14
             compiler: appleclang
+            GCOV: gcov
 
         # To exclude a specific job from the matrix (e.g llvm on macos-14), you can use this syntax.
         exclude:
