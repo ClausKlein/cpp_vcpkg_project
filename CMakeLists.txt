@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21...3.31)
+cmake_minimum_required(VERSION 3.21...4.0)
 
 # set a default CXX standard for the tools and targets that do not specify them.
 # If commented, the latest supported standard for your compiler is automatically set.
@@ -10,6 +10,9 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 include(FetchContent)
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
   cmake_policy(SET CMP0135 NEW)
+endif()
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.31.0")
+  cmake_policy(SET CMP0177 NEW)
 endif()
 
 # Add project_options from https://github.com/aminya/project_options

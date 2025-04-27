@@ -30,11 +30,12 @@ test_release: release
 
 test_install: release
 
-coverage:
+coverage: gcovr.cfg
 ifeq ($(OS), Windows_NT)
 	OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- $(MAKE) test
 else
 	$(MAKE) test
+	mkdir -p build/coverage
 	gcovr -j 1 --delete --root ./ --print-summary --xml-pretty --xml coverage.xml ./build --gcov-executable gcov
 endif
 
