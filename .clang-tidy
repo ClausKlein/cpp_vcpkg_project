@@ -15,7 +15,8 @@ Checks: "*,
         readability-avoid-const-params-in-decls,
         cppcoreguidelines-non-private-member-variables-in-classes,
         misc-non-private-member-variables-in-classes,
-        misc-include-cleaner,
+        -misc-include-cleaner,
+        -misc-use-internal-linkagecor
 "
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''

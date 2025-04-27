@@ -14,7 +14,7 @@
       "binaryDir": "${sourceDir}/build/${presetName}",
       "installDir": "${sourceDir}/install/${presetName}",
       "cacheVariables": {
-        "CMAKE_UNITY_BUILD": true,
+        "CMAKE_CXX_STANDARD": "20",
         "FEATURE_DOCS": true
       }
     },
@@ -29,7 +29,8 @@
           "type": "path",
           "value": "${sourceDir}/install"
         },
-        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_UNITY_BUILD": true,
+        "CMAKE_CXX_STANDARD": "23",
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_SKIP_INSTALL_RULES": false,
         "BUILD_SHARED_LIBS": true,
@@ -50,6 +51,7 @@
       "description": "Debug build using Ninja Multi-Config generator",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
+        "CMAKE_UNITY_BUILD": false,
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_SKIP_INSTALL_RULES": true,
         "BUILD_SHARED_LIBS": true,
