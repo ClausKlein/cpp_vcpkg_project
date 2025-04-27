@@ -22,8 +22,10 @@ stages:
   # for downloading
   apt-get update -qq
   apt-get install -y --no-install-recommends curl gnupg ca-certificates
+  echo -e "\e[0Ksection_end:`date +%s`:my_setup_linux\r\e[0K"
 
 .setup_cpp: &setup_cpp |
+  echo -e "\e[0Ksection_start:`date +%s`:my_setup_cpp[collapsed=true]\r\e[0KHeader of the setup linux collapsible section"
   curl -o ./setup-cpp -LJ "https://github.com/aminya/setup-cpp/releases/download/v0.41.1/setup-cpp-x64-linux"
   chmod +x ./setup-cpp
   ./setup-cpp --compiler $compiler --cmake true --ninja true --ccache true --vcpkg true --task true --gcovr 7 --doxygen true
@@ -37,12 +39,12 @@ stages:
   ninja --version
   which gcovr && gcovr --version
 
-# XXX not longer used! CK
 .task: &test |
   task coverage
   task coverage_release
   task install
 
+# TODO(CK): not used yet!
 .build:
   script:
     - *setup_cpp
